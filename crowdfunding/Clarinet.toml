@@ -1,9 +1,12 @@
 [project]
-name = "crowdfunding"
+name = "simple-crowdfunding"
 clarity_version = "1.0"
+description = "A simple crowdfunding smart contract on the Stacks blockchain."
+authors = ["Hammed Yakub <hamsohood@gmail.com>"]
+license = "MIT"
 
 [contracts.crowdfunding]
 path = "contracts/crowdfunding.clar"
 
-[accounts.devnet]
-default = "SP2C2W3N6ZY7BNZ5W6X1VP7F7RFP4F2Z2RZ6Q6B3Z"
+[repl.analysis]
+passes = ["check_checker"]

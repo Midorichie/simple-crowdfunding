@@ -1,3 +1,5 @@
+;; PHASE 2 - crowdfunding.clar
+
 (define-constant err-unauthorized (err u100))
 (define-constant err-deadline-passed (err u101))
 (define-constant err-goal-not-met (err u102))
@@ -7,25 +9,40 @@
 (define-constant err-deadline-not-reached (err u106))
 (define-constant err-already-initialized (err u110))
 (define-constant err-transfer-failed (err u111))
+(define-constant err-campaign-inactive (err u112))
+(define-constant err-invalid-goal (err u201))
+(define-constant err-invalid-deadline (err u202))
 
 (define-data-var manager principal tx-sender)
 (define-data-var goal uint u0)
 (define-data-var deadline uint u0)
 (define-data-var total-raised uint u0)
 (define-map contributions { contributor: principal } { amount: uint })
-
 (define-data-var campaign-initialized bool false)
+(define-data-var campaign-active bool true) ;; NEW: to disable campaign if needed
 
 ;; Create a crowdfunding campaign
 (define-public (create-campaign (target uint) (end uint))
   (if (var-get campaign-initialized)
       err-already-initialized
+      (if (is-eq target u0)
+          err-invalid-goal
+          (if (<= end block-height)
+              err-invalid-deadline
+              (begin
+                (var-set manager tx-sender)
+                (var-set goal target)
+                (var-set deadline end)
+                (var-set campaign-initialized true)
+                (ok true))))))
+
+;; Disable the campaign (NEW functionality for better control)
+(define-public (disable-campaign)
+  (if (is-eq tx-sender (var-get manager))
       (begin
-        (var-set manager tx-sender)
-        (var-set goal target)
-        (var-set deadline end)
-        (var-set campaign-initialized true)
-        (ok true))))
+        (var-set campaign-active false)
+        (ok true))
+      err-unauthorized))
 
 ;; Contribute STX to the campaign
 (define-public (contribute (amount uint))
@@ -33,26 +50,28 @@
     (sender tx-sender)
     (current-block block-height)
   )
-    (if (is-eq amount u0)
-        err-zero-contribution
-        (if (> current-block (var-get deadline))
-            err-deadline-passed
-            (match (stx-transfer? amount sender (as-contract tx-sender))
-              ok-result
-                (let ((existing (map-get? contributions { contributor: sender })))
-                  (match existing entry
-                    (begin
-                      (map-set contributions { contributor: sender }
-                        { amount: (+ (get amount entry) amount) })
-                      (var-set total-raised (+ (var-get total-raised) amount))
-                      (ok true))
-                    (begin
-                      (map-set contributions { contributor: sender }
-                        { amount: amount })
-                      (var-set total-raised (+ (var-get total-raised) amount))
-                      (ok true))))
-              err-result
-                err-transfer-failed)))))
+    (if (not (var-get campaign-active))
+        err-campaign-inactive
+        (if (is-eq amount u0)
+            err-zero-contribution
+            (if (> current-block (var-get deadline))
+                err-deadline-passed
+                (match (stx-transfer? amount sender (as-contract tx-sender))
+                  ok-result
+                    (let ((existing (map-get? contributions { contributor: sender })))
+                      (match existing entry
+                        (begin
+                          (map-set contributions { contributor: sender }
+                            { amount: (+ (get amount entry) amount) })
+                          (var-set total-raised (+ (var-get total-raised) amount))
+                          (ok true))
+                        (begin
+                          (map-set contributions { contributor: sender }
+                            { amount: amount })
+                          (var-set total-raised (+ (var-get total-raised) amount))
+                          (ok true))))
+                  err-result
+                    err-transfer-failed))))))
 
 ;; Withdraw funds if campaign goal is met
 (define-public (withdraw)
