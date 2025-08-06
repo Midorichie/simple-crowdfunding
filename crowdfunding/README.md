@@ -1,57 +1,58 @@
-# Crowdfunding Contract (Clarity - Stacks Blockchain)
+# Simple Crowdfunding on Stacks Blockchain
 
-## 📌 Description
-A simple crowdfunding smart contract written in Clarity. A campaign manager can start a fundraising campaign by setting a funding goal and a deadline. Users can contribute STX tokens. If the funding goal is met before the deadline, the manager can withdraw the funds. If the goal is not met by the deadline, contributors can claim refunds.
+This project implements a simple crowdfunding smart contract in Clarity, designed to run on the Stacks blockchain using Clarinet.
 
 ---
 
-## 🚀 Project Setup
+## 📌 Contract: `crowdfunding.clar`
 
-### Requirements
-- [Clarinet](https://docs.stacks.co/docs/clarity/clarinet-installation)
-- Git
+### Features:
+- A manager can create a campaign with a funding goal and deadline.
+- Contributors can send STX to support the campaign.
+- If the goal is reached before the deadline, the manager can withdraw the funds.
+- If the goal is not reached after the deadline, contributors can claim refunds.
+- The manager can also disable the campaign to prevent further contributions.
 
-### Setup Commands
+---
 
+## 🚀 Setup Instructions
+
+### 1. Install Clarinet
 ```bash
-git clone <your-repo-url>
-cd crowdfunding
+curl -sSfL https://get.clarinet.io | sh
+2. Clone this repository
+bash
+Copy
+Edit
+git clone https://github.com/yourusername/simple-crowdfunding.git
+cd simple-crowdfunding
+3. Check and build
+bash
+Copy
+Edit
 clarinet check
-clarinet test
-🛠️ Contract Functions
-create-campaign (target uint, end uint)
-Initializes the campaign.
+📂 Project Structure
+bash
+Copy
+Edit
+contracts/
+  crowdfunding.clar    # Smart contract code
+Clarinet.toml          # Project configuration
+README.md              # Documentation
+🧪 Functions
+Function	Access	Description
+create-campaign	Public	Initializes campaign (only once)
+contribute	Public	Allows STX contribution
+withdraw	Manager	Withdraws funds if goal met
+claim-refund	Public	Contributors reclaim funds if goal not met
+disable-campaign	Manager	Stops campaign from accepting new contributions
 
-Can only be called once.
+🛡 Security Considerations
+Only the manager can withdraw or disable campaigns.
 
-Sets the funding goal and deadline.
+Contributions are disabled if deadline is passed or campaign is inactive.
 
-contribute
-Allows users to contribute STX before the deadline.
+Refunds are only possible after deadline if goal not met.
 
-Amount is determined from the transaction.
-
-withdraw
-Allows the campaign manager to withdraw all raised funds if the funding goal is met and the campaign is still within the deadline.
-
-claim-refund
-Allows contributors to claim refunds after the deadline if the funding goal was not met.
-
-📄 Contract Variables
-Variable	Description
-manager	Campaign creator
-goal	Funding target
-deadline	Campaign deadline (block height)
-total-raised	Total contributions
-contributions	Map of contributor => amount
-
-🧪 Testing
-Tests should simulate:
-
-Campaign creation
-
-Valid and invalid contributions
-
-Successful goal achievement and manager withdrawal
-
-Missed goal and user refunds
+👨‍💻 Author
+Hammed Yakub
