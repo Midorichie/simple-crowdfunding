@@ -1,0 +1,9 @@
+[project]
+name = "crowdfunding"
+clarity_version = "1.0"
+
+[contracts.crowdfunding]
+path = "contracts/crowdfunding.clar"
+
+[accounts.devnet]
+default = "SP2C2W3N6ZY7BNZ5W6X1VP7F7RFP4F2Z2RZ6Q6B3Z"
